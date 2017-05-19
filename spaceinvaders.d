@@ -1,0 +1,12 @@
+.\spaceinvaders.o: SpaceInvaders.c
+.\spaceinvaders.o: TExaS.h
+.\spaceinvaders.o: PORTS.c
+.\spaceinvaders.o: ports.h
+.\spaceinvaders.o: tm4c123gh6pm.h
+.\spaceinvaders.o: ai.c
+.\spaceinvaders.o: board.c
+.\spaceinvaders.o: renderer.c
+.\spaceinvaders.o: Nokia5110.h
+.\spaceinvaders.o: Random.h
+.\spaceinvaders.o: C:\Keil\ARM\ARMCC\bin\..\include\stdlib.h
+.\spaceinvaders.o: C:\Keil\ARM\ARMCC\bin\..\include\time.h
