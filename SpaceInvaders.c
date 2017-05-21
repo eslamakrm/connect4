@@ -13,31 +13,14 @@
 
 #include "TExaS.h"
 #include "PORTS.c"
+#include "UART.c"
 #include "ai.c"
 #include <stdlib.h>
 #include <time.h>
 
 int winner = 0; //determine if the board is win or not
 int mode = 0; //determine the mode of the game
-//------------UART_InChar------------
-// Wait for new serial port input
-// Input: none
-// Output: ASCII code for key typed
-unsigned char UART_InChar(void){
-// as part of Lab 11, modify this program to use UART1 instead of UART1
-  while((UART1_FR_R&UART_FR_RXFE) != 0);
-  return((unsigned char)(UART1_DR_R&0xFF));
-}
-
-//------------UART_OutChar------------
-// Output 8-bit to serial port
-// Input: letter is an 8-bit ASCII character to be transferred
-// Output: none
-void UART_OutChar(unsigned char data){
-// as part of Lab 11, modify this program to use UART1 instead of UART1
-  while((UART1_FR_R&UART_FR_TXFF) != 0);
-  UART1_DR_R = data;
-}
+int seed;
 
 //delay for (count * 1ms)
 void Delay1ms(unsigned long count){unsigned long volatile time;
@@ -56,17 +39,17 @@ void read_buttons(int x){
 	do{
 		sw1 = GPIO_PORTF_DATA_R&(1<<4);
 		sw2 = GPIO_PORTF_DATA_R&(1<<0);
-		Delay1ms(50); //debounce effect
+		Delay1ms(20); //debounce 
 		if(!(sw1)){
 			if(mode){
 				selected = (selected + 1) % SIZE_COLS;
 				select(selected);
 			}else{
-				selected = (selected + 1) % 3;
+				selected = (selected + 1) % 2;
 				select_vertical(selected);
 			}
 			while(!(GPIO_PORTF_DATA_R&(1<<4)));
-			Delay1ms(50);
+			Delay1ms(20);
 		}
 	}while(sw2);
 		
@@ -78,22 +61,21 @@ void read_buttons(int x){
 			break;
 			
 			//single player mode
-			case 1:
 			case 2:
 				winner = play(selected);
 				if(winner == -1) return; //prevent illigal moves
 				selected = 0;
 				select(selected);
 			break;
-			case 3:
+			case 1:
 				winner = play(selected);
 				if(winner == -1) return; //prevent illigal moves
-				UART_OutChar(selected+'0');
+				UART_OutChar(selected+'1');
 				selected = -1;
 				select(selected);
 			break;
 		}
-		while(!(GPIO_PORTF_DATA_R&(1<<0)));
+		while(!(GPIO_PORTF_DATA_R&(1<<0))){seed++;};
 }
 
 void DisableInterrupts(void); // Disable interrupts
@@ -113,17 +95,13 @@ void Delay1ms(unsigned long count); // time delay in 1 mseconds
 		read_buttons(0);
 	}while(!mode);
 	
-	if(mode == 1 || mode == 2){
+	if(mode == 2){
 		board_init();
 		GPIO_PORTF_DATA_R = 4;
 		
-		if(mode == 1){
-			ai_player = 0;
-			play(3);
-			select(0);
-		}else if(mode == 2){
+		
 			ai_player = 1;
-		}
+		
 		Delay1ms(100);
 		do{
 				do{
@@ -142,17 +120,19 @@ void Delay1ms(unsigned long count); // time delay in 1 mseconds
 			
 		}while(!winner);
 		
-	}else if(mode == 3){
+	}
+	else if(mode == 1){
 		int x, y;
 		int start;
 
-		Nokia5110_Clear();
-		srand(10);
+		lcd_clear();
+		srand(seed);
 		x = rand()%9;
 		
 		UART_OutChar(x + '0');
 		
 		y = (UART_InChar()-'0');
+		
 		if(x > y){
 			ai_player = 1;
 			start = 1;
@@ -176,8 +156,10 @@ void Delay1ms(unsigned long count); // time delay in 1 mseconds
 				//ai(board, tops, 4, -999999, 999999, ai_player, ai_player, &selected);
 				
 				do{
-					selected = UART_InChar()-'0';
-					winner = play(selected);
+					do{
+						selected = UART_InChar()-'1';
+					  }while(selected >7 || selected < 0);
+						winner = play(selected);
 				}while(winner == -1);
 				
 				selected = 0;
@@ -189,7 +171,7 @@ void Delay1ms(unsigned long count); // time delay in 1 mseconds
 				}while(winner == -1); //prevent illigal moves
 			}
 			
-			if(board_tie()){
+			if(board_tie() && !winner){
 				winner = 'T';
 				break;
 			}
@@ -197,6 +179,7 @@ void Delay1ms(unsigned long count); // time delay in 1 mseconds
 		}while(!winner);
 	}
 	
-	Delay1ms(1000);
+  Delay1ms(5000);
 	gameover(winner);
 }
+

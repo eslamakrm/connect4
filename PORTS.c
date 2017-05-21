@@ -21,22 +21,3 @@ void PortF_Init(void){ volatile unsigned long delay;
 }
 
 
-void UART_Init(void){
-// as part of Lab 11, modify this program to use UART1 instead of UART1
-//                 switching from PC5,PC4 to PB1,PB0
-  SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1; // activate UART1
-  SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOB; // activate port B
-  UART1_CTL_R &= ~UART_CTL_UARTEN;      // disable UART
-  UART1_IBRD_R = 43;                    // IBRD = int(80,000,000 / (16 * 115200)) = int(43.402778)
-  UART1_FBRD_R = 26;                    // FBRD = round(0.402778 * 64) = 26
-                                        // 8 bit word length (no parity bits, one stop bit, FIFOs)
-  UART1_LCRH_R = (UART_LCRH_WLEN_8|UART_LCRH_FEN);
-  UART1_CTL_R |= (1<<9) | (1<<8);
-	
-  GPIO_PORTB_AFSEL_R |= 0x03;           // enable alt funct on PB1,PB0
-  GPIO_PORTB_DEN_R |= 0x03;             // enable digital I/O on PB1,PB0
-                                        // configure PB1,PB0 as UART1
-  GPIO_PORTB_PCTL_R = 0x00000011;
-  GPIO_PORTB_AMSEL_R &= ~0x03;          // disable analog functionality on PB1,PB0
-	UART1_CTL_R |= UART_CTL_UARTEN;       // enable UART
-}

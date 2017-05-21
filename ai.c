@@ -56,11 +56,11 @@ int ai(char board[][SIZE_COLS], int tops[], int depth, int a, int b, int max_pla
 
     if (win_score == INF)
 		{
-			return INF*(depth+1);
+			return INF;//*(depth+1);
 		}
     if (lose_score == INF)
 		{
-			return -(INF)*(depth+1);
+			return -(INF);//*(depth+1);
 		}
 
     if (depth == 0)

@@ -15,9 +15,7 @@ int ai_player = 1; 								//the Opponnent or ai player
 //Make the initial state of the game
 void board_init()
 {
-    int i, j;
-		Nokia5110_ClearBuffer();
-		Nokia5110_DisplayBuffer(); 
+    int i, j; 
     for (i = 0; i < SIZE_ROWS; i++)
     {
         tops[i] = 0;
@@ -30,6 +28,28 @@ void board_init()
 		draw_select(0, players[player]);
 }
 
+void cell(int c,int r,char e)
+{
+	int i,j;
+	char m;
+	i=(c*8);
+	lcd_cmd_TR(0x8d+i);
+	lcd_cmd_TR(0x40+r);
+	for (j=0;j<8;j++)
+	{
+		if(r==0 && /*tops[c]==6 &&*/ board[5][c]=='X'){m=X_pat[j];}
+		else if(r==0 && /*tops[c]==6 &&*/ board[5][c]=='O'){m=O_pat[j];}
+		else {m=0x00;}
+		if (e=='X')
+		{lcd_data_TR(X_pat[j]|board_pat[j]);} 
+		else if(e=='O')
+		{lcd_data_TR(O_pat[j]|board_pat[j]);}
+		else if(e=='s')
+		{lcd_data_TR(sel_pat[j]|((board_pat[j]| m) & 0xfe));}
+		else if(e==' ')
+		{lcd_data_TR((board_pat[j]| m) & 0xfe);}
+	}
+}
 
 //Score function which determine the score of a given board 
 int win(char board[][SIZE_COLS], int rows, int cols, char player)
